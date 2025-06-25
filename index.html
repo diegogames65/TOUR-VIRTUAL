@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tour Virtual 360º - Múltiplos Uploads</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core/index.min.css" />
+
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    #viewer {
+      width: 100vw;
+      height: 100vh;
+    }
+    #menu {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255,255,255,0.9);
+      padding: 10px;
+      border-radius: 8px;
+      z-index: 100;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    #menu button, #menu input {
+      margin: 4px 0;
+      padding: 6px 12px;
+      cursor: pointer;
+      display: block;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="menu">
+    <button onclick="loadPanorama('images/pano1.jpg')">Panorama 1</button>
+    <button onclick="loadPanorama('images/pano2.jpg')">Panorama 2</button>
+    <input type="file" accept="image/*" multiple onchange="handleMultipleUploads(event)" />
+    <div id="customImages"></div>
+  </div>
+
+  <div id="viewer"></div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three/build/three.module.js",
+        "@photo-sphere-viewer/core": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core/index.module.js"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import { Viewer } from '@photo-sphere-viewer/core';
+
+    const viewer = new Viewer({
+      container: document.querySelector('#viewer'),
+      panorama: 'images/pano1.jpg',
+    });
+
+    window.loadPanorama = function (path) {
+      viewer.setPanorama(path);
+    };
+
+    window.handleMultipleUploads = function (event) {
+      const files = event.target.files;
+      const container = document.getElementById('customImages');
+      container.innerHTML = ''; // limpa os anteriores
+      Array.from(files).forEach((file, index) => {
+        if (file && file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const imageData = e.target.result;
+            const button = document.createElement('button');
+            button.textContent = file.name || `Imagem ${index + 1}`;
+            button.onclick = () => viewer.setPanorama(imageData);
+            container.appendChild(button);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    };
+  </script>
+
+</body>
+</html>
